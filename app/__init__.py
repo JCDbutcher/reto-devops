@@ -9,17 +9,16 @@ def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(config_dict[config_name])
 
-    # Initialize the database
+    # Inicializar base de datos
     db.init_app(app)
 
- #   with app.app_context():
- #       db.create_all()  # <-- Esta línea crea las tablas si no existen
+    # Crear tablas si es necesario
+    # Descomentar si se quiere auto-crear las tablas al iniciar
+    # with app.app_context():
+    #     db.create_all()
 
-    # Import blueprints/routes
+    # Importar y registrar rutas
     from app.routes import data_routes
-
-    # Register blueprints
     app.register_blueprint(data_routes)
 
     return app
-
