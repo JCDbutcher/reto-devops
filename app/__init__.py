@@ -12,8 +12,6 @@ def create_app(config_name):
     # Inicializar base de datos
     db.init_app(app)
 
-    # Crear tablas si es necesario
-    # Descomentar si se quiere auto-crear las tablas al iniciar
     # with app.app_context():
     #     db.create_all()
 

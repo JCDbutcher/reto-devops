@@ -28,7 +28,7 @@ La aplicación sigue una arquitectura de microservicio simple basada en contened
 
 ## Cómo ejecutar el entorno local
 
-Asegúrate de tener Docker y Docker Compose instalados.
+Asegúrar de tener Docker y Docker Compose instalados.
 
 1. Clona el repositorio:
 ```bash
