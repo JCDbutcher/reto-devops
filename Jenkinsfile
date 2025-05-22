@@ -64,6 +64,7 @@ pipeline {
         stage('Build Docker') {
             steps {
                 sh '''
+                    echo " Rama detectada: ${env.BRANCH_NAME}"
                     echo "Construyendo imagen Docker..."
                     docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
                 '''
@@ -71,7 +72,6 @@ pipeline {
         }
 
         stage('Push Docker') {
-            echo "🪵 Rama detectada: ${env.BRANCH_NAME}"
             when {
                 anyOf {
                     branch 'main'
