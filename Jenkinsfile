@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(false)
+    }
+
     environment {
         DOCKER_IMAGE = "juanca547/reto_devops"
     }
@@ -55,9 +59,10 @@ pipeline {
         stage('Build Docker') {
             steps {
                 script {
-                    def tag = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+                    def branch = env.BRANCH_NAME ?: "manual"
+                    def tag = "${branch}-${env.BUILD_NUMBER}"
                     sh """
-                        echo "🐳 Construyendo imagen Docker con tag: $tag"
+                        echo " Construyendo imagen Docker con tag: $tag"
                         docker build -t $DOCKER_IMAGE:$tag .
                     """
                 }
@@ -74,7 +79,8 @@ pipeline {
             }
             steps {
                 script {
-                    def tag = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+                    def branch = env.BRANCH_NAME ?: "manual"
+                    def tag = "${branch}-${env.BUILD_NUMBER}"
                     withCredentials([usernamePassword(
                         credentialsId: 'dockerhub',
                         usernameVariable: 'DOCKER_USER',
