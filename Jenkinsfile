@@ -1,8 +1,13 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.9-slim'  // Imagen oficial con Python
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     environment {
-        DOCKER_IMAGE = "juanca547/reto_devops"  // Cambia por tu imagen si es diferente
+        DOCKER_IMAGE = "juanca547/reto_devops" // Cambia a tu imagen en Docker Hub si es necesario
         DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
     }
 
@@ -10,10 +15,8 @@ pipeline {
 
         stage('Preparar entorno') {
             steps {
-                echo 'Clonando código y preparando entorno virtual...'
+                echo 'Instalando dependencias de Python...'
                 sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
@@ -22,9 +25,8 @@ pipeline {
 
         stage('Ejecutar tests') {
             steps {
-                echo 'Ejecutando pruebas unitarias con cobertura...'
+                echo 'Ejecutando tests con cobertura...'
                 sh '''
-                    . venv/bin/activate
                     pytest --cov=app --cov-report=term-missing
                 '''
             }
@@ -32,9 +34,8 @@ pipeline {
 
         stage('Lint con flake8') {
             steps {
-                echo 'Validando estilo de código con flake8...'
+                echo 'Ejecutando flake8...'
                 sh '''
-                    . venv/bin/activate
                     pip install flake8
                     flake8 app/ --max-line-length=120
                 '''
@@ -52,12 +53,12 @@ pipeline {
             when {
                 anyOf {
                     branch 'main'
-                    branch 'develop'
                     branch 'master'
+                    branch 'develop'
                 }
             }
             steps {
-                echo "Publicando imagen en Docker Hub..."
+                echo "Subiendo imagen a Docker Hub..."
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
