@@ -12,10 +12,10 @@ pipeline {
             steps {
                 sh '''
                     echo " Verificando Docker..."
-                    command -v docker || { echo "❌ Docker no disponible"; exit 127; }
+                    command -v docker || { echo " Docker no disponible"; exit 127; }
 
                     echo " Creando entorno virtual..."
-                    python3 -m venv venv
+                    apt-get update && apt-get install -y python3-venv
 
                     echo " Activando entorno virtual..."
                     . venv/bin/activate
@@ -89,7 +89,7 @@ pipeline {
                     // Limpieza de recursos Docker (no es crítico si falla)
                     sh 'docker system prune -f || true'
                 } catch (Exception e) {
-                    echo "⚠️ Limpieza falló pero el pipeline continúa"
+                    echo " Limpieza falló pero el pipeline continúa"
                 }
             }
         }
