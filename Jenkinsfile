@@ -1,18 +1,17 @@
 pipeline {
     agent {
         docker {
-            image 'python:3.9-slim'  // Imagen oficial con Python
+            image 'python:3.9-slim'
             args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
     environment {
-        DOCKER_IMAGE = "juanca547/reto_devops" // Cambia a tu imagen en Docker Hub si es necesario
+        DOCKER_IMAGE = "juanca547/reto_devops"
         DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
     }
 
     stages {
-
         stage('Preparar entorno') {
             steps {
                 echo 'Instalando dependencias de Python...'
@@ -34,7 +33,7 @@ pipeline {
 
         stage('Lint con flake8') {
             steps {
-                echo 'Ejecutando flake8...'
+                echo 'Verificando estilo de código con flake8...'
                 sh '''
                     pip install flake8
                     flake8 app/ --max-line-length=120
@@ -42,9 +41,9 @@ pipeline {
             }
         }
 
-        stage('Build imagen Docker') {
+        stage('Construir imagen Docker') {
             steps {
-                echo "Construyendo imagen Docker: $DOCKER_IMAGE:$DOCKER_TAG"
+                echo "Construyendo imagen: $DOCKER_IMAGE:$DOCKER_TAG"
                 sh "docker build -t $DOCKER_IMAGE:$DOCKER_TAG ."
             }
         }
@@ -71,7 +70,7 @@ pipeline {
 
     post {
         always {
-            echo 'Limpieza del entorno'
+            echo 'Limpieza de Docker local'
             sh 'docker system prune -f || true'
         }
     }
