@@ -71,6 +71,7 @@ pipeline {
         }
 
         stage('Push Docker') {
+            echo "🪵 Rama detectada: ${env.BRANCH_NAME}"
             when {
                 anyOf {
                     branch 'main'
