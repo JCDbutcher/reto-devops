@@ -1,32 +1,30 @@
 pipeline {
     agent any
 
-    options {
-        skipDefaultCheckout(false)
-    }
-
     environment {
         DOCKER_IMAGE = "juanca547/reto_devops"
+        BRANCH_NAME = "${env.BRANCH_NAME ?: 'main'}"  // Valor por defecto si no se detecta
     }
 
     stages {
+
         stage('Preparar entorno') {
             steps {
                 sh '''
                     set -e
-                    echo "Verificando Docker..."
-                    command -v docker || { echo " Docker no disponible"; exit 127; }
+                    echo " Verificando Docker..."
+                    command -v docker || { echo "Docker no disponible"; exit 127; }
 
                     echo " Instalando entorno virtual..."
                     apt-get update && apt-get install -y python3-venv
 
                     python3 -m venv venv
                     if [ ! -f "venv/bin/activate" ]; then
-                        echo " Fallo creando entorno virtual"
+                        echo "Fallo creando entorno virtual"
                         exit 1
                     fi
 
-                    echo "Activando entorno e instalando dependencias..."
+                    echo "Instalando dependencias..."
                     . venv/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
@@ -37,7 +35,7 @@ pipeline {
         stage('Tests') {
             steps {
                 sh '''
-                    echo  "Ejecutando tests..."
+                    echo " Ejecutando tests con cobertura..."
                     . venv/bin/activate
                     export PYTHONPATH=$(pwd)
                     pytest --cov=app --cov-report=term-missing
@@ -48,7 +46,7 @@ pipeline {
         stage('Lint') {
             steps {
                 sh '''
-                    echo "Ejecutando flake8..."
+                    echo " Ejecutando flake8..."
                     . venv/bin/activate
                     pip install flake8
                     flake8 app/ --max-line-length=120
@@ -59,8 +57,7 @@ pipeline {
         stage('Build Docker') {
             steps {
                 script {
-                    def branch = env.BRANCH_NAME ?: "manual"
-                    def tag = "${branch}-${env.BUILD_NUMBER}"
+                    def tag = "${BRANCH_NAME}-${env.BUILD_NUMBER}"
                     sh """
                         echo " Construyendo imagen Docker con tag: $tag"
                         docker build -t $DOCKER_IMAGE:$tag .
@@ -72,15 +69,14 @@ pipeline {
         stage('Push Docker') {
             when {
                 anyOf {
-                    branch 'main'
-                    branch 'master'
-                    branch 'develop'
+                    expression { env.BRANCH_NAME == 'main' }
+                    expression { env.BRANCH_NAME == 'master' }
+                    expression { env.BRANCH_NAME == 'develop' }
                 }
             }
             steps {
                 script {
-                    def branch = env.BRANCH_NAME ?: "manual"
-                    def tag = "${branch}-${env.BUILD_NUMBER}"
+                    def tag = "${BRANCH_NAME}-${env.BUILD_NUMBER}"
                     withCredentials([usernamePassword(
                         credentialsId: 'dockerhub',
                         usernameVariable: 'DOCKER_USER',
@@ -100,7 +96,7 @@ pipeline {
     post {
         always {
             script {
-                echo 'Limpieza post-pipeline'
+                echo '🧹 Limpieza post-pipeline'
                 try {
                     sh 'docker system prune -f || true'
                 } catch (Exception e) {
@@ -110,6 +106,7 @@ pipeline {
         }
     }
 }
+
 
  /*       stage('Desplegar en servidor remoto') {
     when {
