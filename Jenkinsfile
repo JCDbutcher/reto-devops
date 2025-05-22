@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.9-slim'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE = "juanca547/reto_devops"
@@ -14,41 +9,43 @@ pipeline {
     stages {
         stage('Preparar entorno') {
             steps {
-                echo 'Instalando dependencias de Python...'
                 sh '''
-                    pip install --upgrade pip
+                    command -v docker || { echo "❌ Docker no disponible"; exit 127; }
+                    python3 -m venv venv
+                    . venv/bin/activate
                     pip install -r requirements.txt
                 '''
             }
         }
 
-        stage('Ejecutar tests') {
+        stage('Tests') {
             steps {
-                echo 'Ejecutando tests con cobertura...'
                 sh '''
+                    . venv/bin/activate
                     pytest --cov=app --cov-report=term-missing
                 '''
             }
         }
 
-        stage('Lint con flake8') {
+        stage('Lint') {
             steps {
-                echo 'Verificando estilo de código con flake8...'
                 sh '''
+                    . venv/bin/activate
                     pip install flake8
                     flake8 app/ --max-line-length=120
                 '''
             }
         }
 
-        stage('Construir imagen Docker') {
+        stage('Build Docker') {
             steps {
-                echo "Construyendo imagen: $DOCKER_IMAGE:$DOCKER_TAG"
-                sh "docker build -t $DOCKER_IMAGE:$DOCKER_TAG ."
+                sh '''
+                    docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
+                '''
             }
         }
 
-        stage('Push a Docker Hub') {
+        stage('Push Docker') {
             when {
                 anyOf {
                     branch 'main'
@@ -57,7 +54,6 @@ pipeline {
                 }
             }
             steps {
-                echo "Subiendo imagen a Docker Hub..."
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
@@ -70,8 +66,14 @@ pipeline {
 
     post {
         always {
-            echo 'Limpieza de Docker local'
-            sh 'docker system prune -f || true'
+            script {
+                echo '🧼 Post-pipeline cleanup'
+                try {
+                    sh 'docker system prune -f || true'
+                } catch (Exception e) {
+                    echo "Limpieza falló pero el pipeline continúa"
+                }
+            }
         }
     }
 }
