@@ -92,6 +92,23 @@ pipeline {
                 }
             }
         }
+ /*       stage('Desplegar en servidor remoto') {
+    when {
+        branch 'main'
+    }
+    steps {
+        sshagent(['mi-clave-ssh']) {
+            sh '''
+                ssh user@mi-servidor 'docker pull juanca547/reto_devops:main-${BUILD_NUMBER} &&
+                                      docker stop reto_devops || true &&
+                                      docker rm reto_devops || true &&
+                                      docker run -d --name reto_devops -p 5000:5000 juanca547/reto_devops:main-${BUILD_NUMBER}'
+            '''
+        }
+    }
+}
+*/
+
     }
 
     post {
