@@ -32,7 +32,7 @@ Asegúrar de tener Docker y Docker Compose instalados.
 
 1. Clona el repositorio:
 ```bash
-[git clone https://github.com/tuusuario/tu-repo.git](https://github.com/JCDbutcher/reto-devops.git)
+git clone https://github.com/JCDbutcher/reto-devops.git
 ```
 
 Construye y levanta los contenedores:
