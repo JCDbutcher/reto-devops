@@ -1,5 +1,6 @@
 from app import db
 
+
 class Data(db.Model):
     """
     Modelo de base de datos que representa un registro de datos simple.

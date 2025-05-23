@@ -5,12 +5,14 @@ from app.config import config_dict
 # Inicialización global de SQLAlchemy
 db = SQLAlchemy()
 
-# Blueprint para rutas básicas (puede eliminarse si está duplicado en routes.py)
+# Blueprint para ruta básica (puede eliminarse si está duplicado en routes.py)
 data_routes = Blueprint('data_routes', __name__)
+
 
 @data_routes.route('/', methods=['GET'])
 def home():
     return jsonify({"message": "Bienvenido a la API"})
+
 
 def create_app(config_name):
     """
