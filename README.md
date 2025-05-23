@@ -32,16 +32,17 @@ Asegúrar de tener Docker y Docker Compose instalados.
 
 1. Clona el repositorio:
 ```bash
-git clone https://github.com/tuusuario/tu-repo.git
-cd tu-repo
+[git clone https://github.com/tuusuario/tu-repo.git](https://github.com/JCDbutcher/reto-devops.git)
 ```
 
 Construye y levanta los contenedores:
 ```bash
 docker-compose up --build
 ```
-
 Accede a la app en tu navegador en:
+```bash
+docker run -p 5000:5000   -e FLASK_ENV=testing   -e SQLALCHEMY_DATABASE_URI=sqlite:///:memory:   juanca547/reto_devops:main-25
+```
 http://localhost:5000
 
 ## Cómo ejecutar los tests
